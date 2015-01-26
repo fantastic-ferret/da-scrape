@@ -40,13 +40,19 @@ created_dirs = set()
 
 session = requests.Session()
 
-while True:
-    feed = BeautifulSoup(get(argv[1]).text, 'xml')
+offset = 0
 
+while True:
+    print('offset = {}'.format(offset))
+    feed = BeautifulSoup(
+        get('{}&offset={}'.format(argv[1], offset)).text, 'xml')
+
+    empty = True
     for link in feed.find_all('link'):
         m = image_page_regex.match(link.text)
         if not m:
             continue
+        empty = False
         deviant = m.group(1)
         if deviant not in created_dirs:
             try:
@@ -56,11 +62,6 @@ while True:
                     raise
             created_dirs.add(deviant)
 
-        #print(link.text)
-        #with open('page.html', 'wb') as f:
-            #for chunk in get(link.text).iter_content(4000):
-                #f.write(chunk)
-        #exit(1)
         image_page = BeautifulSoup(get(link.text).text)
         for image_link in image_page.select('a.dev-page-download'):
             m = image_id_regex.match(image_link['href'])
@@ -71,5 +72,8 @@ while True:
                 for chunk in get(image_link['href']).iter_content(4000):
                     f.write(chunk)
             print('{}: {}'.format(filename, image_link['href']))
+    if empty:
+        print('Done')
+        exit(0)
 
-    break
+    offset += 60  # FIXME: Figure out how to detect this number.
