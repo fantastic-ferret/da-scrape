@@ -10,16 +10,10 @@ import requests
 from bs4 import BeautifulSoup
 
 
-USER_AGENT = (
-    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) '
-    'Ubuntu Chromium/39.0.2171.65 Chrome/39.0.2171.65 Safari/537.36'
-)
-
-
 def get(url, referer=None):
     for i in range(1, 6):
         sleep(i / 2)
-        headers = {'User-Agent': USER_AGENT}
+        headers = {}
         if referer:
             headers['Referer'] = referer
         resp = session.get(url, headers=headers)
