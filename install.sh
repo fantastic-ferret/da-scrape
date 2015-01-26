@@ -10,4 +10,4 @@ fi
 source .env/bin/activate
 
 
-pip3 install beautifulsoup4==4.3.2
+pip3 install beautifulsoup4==4.3.2 lxml==3.4.1
