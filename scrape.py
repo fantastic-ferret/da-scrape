@@ -28,7 +28,7 @@ def get(url, referer=None):
 
 image_page_regex = re.compile(r'http://([^.]*).deviantart.com/art/')
 image_id_regex = re.compile(
-    r'http://www.deviantart.com/download/([^/]*)/[^.]*\.([^?]*)')
+    r'http://www.deviantart.com/download/([^/]*)/([^.]*\.[^?]*)')
 
 
 if len(argv) == 1:
@@ -57,21 +57,34 @@ while True:
         if deviant not in created_dirs:
             try:
                 os.mkdir(deviant)
-            except OSError as e:
-                if e.errno != errno.EEXIST:
-                    raise
+            except FileExistsError:
+                pass
             created_dirs.add(deviant)
 
         image_page = BeautifulSoup(get(link.text).text)
-        for image_link in image_page.select('a.dev-page-download'):
-            m = image_id_regex.match(image_link['href'])
-            if not m:
-                continue
-            filename = deviant + '/' + m.group(1) + '.' + m.group(2)
-            with open(filename, 'wb') as f:
+        try:
+            image_link = image_page.select('a.dev-page-download')[0]
+        except IndexError:
+            continue
+
+        m = image_id_regex.match(image_link['href'])
+        if not m:
+            continue
+        filename = deviant + '/' + m.group(1) + '_' + m.group(2)
+        try:
+            with open(filename, 'xb') as f:
                 for chunk in get(image_link['href']).iter_content(4000):
                     f.write(chunk)
-            print('{}: {}'.format(filename, image_link['href']))
+        except FileExistsError:
+            print('already downloaded ' + filename)
+            continue
+        except:
+            try:
+                os.remove(filename)
+            except:
+                pass
+            raise
+        print(filename)
     if empty:
         print('Done')
         exit(0)
