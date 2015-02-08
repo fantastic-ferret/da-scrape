@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 set -o errexit
-shopt -s nullglob
 
 if ! [[ -d .env ]]; then
     virtualenv .env -p $(which python3)
